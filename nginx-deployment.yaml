@@ -1,0 +1,29 @@
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment-2
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx2
+    spec:
+      containers:
+      - name: nginx
+        image: nginx #jwilder/nginx-proxy
+        ports:
+        - containerPort: 80
+        env:
+        - name: SYSDIG_AGENT_CONF
+          value: "{ 'app_checks': [{ 'name': 'nginx', 'check_module': 'nginx', 'pattern': {'exe': 'nginx: worker process'}, 'conf': {'nginx_status_url': 'http://104.154.138.145/nginx_status/'}}]}"
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/
+          name: config
+      volumes:
+        - name: config
+          configMap:
+            name: nginxconfig 
+            items:
+            - key: nginx.conf
+              path: nginx.conf
